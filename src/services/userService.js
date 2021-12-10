@@ -1,6 +1,5 @@
 const UserRepository = require('../dao/userRepository');
-
-
+const Bcrypt = require('./brycpt');
 const Auth = require('../utils/auth');
 
 class UserService {
@@ -14,7 +13,10 @@ class UserService {
         if (userDetailsArr.length) {
             return { success: false, data: {}, message: `username (${username}) already exists please use a new username.`};
         }
-        const responseObj = await this.userRepository.save(username, email, password);
+        // encrypting the password
+        const bcrypt = new Bcrypt();
+        const encryptedPassword = await bcrypt.encryptPassword(password);
+        const responseObj = await this.userRepository.save(username, email, encryptedPassword);
         return { success: true , data: responseObj, message: `user created successfully`};;
     }
 
@@ -30,10 +32,17 @@ class UserService {
     }
 
     async getUserDetailsByUsernameAndPassword(username, password) {
-        const userDetailsArr = await this.userRepository.findUserByUsernameAndPassword(username, password);
+        const userDetailsArr = await this.userRepository.findUserByUsernameAndPassword(username);
         if (userDetailsArr.length) {
-            const token = new Auth().encrypt({id: userDetailsArr[0].id});
-            return { success: true , data: {token}, message: `user logged in successfully.`};
+            // comparing the password with hash
+            const bcrypt = new Bcrypt();
+            if (await bcrypt.decryptPassword(password, userDetailsArr[0].password)) {
+                const token = new Auth().encrypt({id: userDetailsArr[0].id});
+                return { success: true , data: {token}, message: `user logged in successfully.`};
+            }
+            else {
+                return { success: false , data: {}, message: `either username or password is incorrect.`};
+            }
         }
         else return { success: false , data: {}, message: `either username or password is incorrect.`};
     }
