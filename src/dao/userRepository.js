@@ -34,10 +34,10 @@ class UserRepository {
         return userDataArr;
     }
 
-    async findUserByUsernameAndPassword(username, password) {
+    async findUserByUsernameAndPassword(username) {
         const connection= await this.database.getConnection();
-        const query = `SELECT * FROM USERS WHERE username=? and password = ?`;
-        const [userDataArr] = await connection.query(query, [username, password]);
+        const query = `SELECT * FROM USERS WHERE username=?`;
+        const [userDataArr] = await connection.query(query, [username]);
         return userDataArr;
     }
 }
