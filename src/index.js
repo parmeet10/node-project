@@ -8,15 +8,4 @@ app.use('/', userRoutes);
 app.use('/', blogRoutes);
 
 const port = 3000;
-
-global.database = {
-
-    users: {
-        list: [],
-
-    },
-    blogs: {
-        list: []
-    }
-};
 app.listen(3000, () => { console.log(`server started and running at port:${port}`) });

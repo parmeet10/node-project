@@ -20,5 +20,13 @@ class BlogService {
         const blogDataArr=await this.blogRepository.getBlogFromId(id);
         return blogDataArr;
     }
+    async comments(comment,id,username){
+        const commentOnBlog=await this.blogRepository.blogComment(comment,id,username)
+        return {success:true,data:commentOnBlog,message:"comment on blog done successfully"}
+    }
+    async commentsOnBlog(id){
+        const commentOnBlog=await this.blogRepository.findComment(id)
+        return commentOnBlog;
+    }
 };
 module.exports=BlogService;
