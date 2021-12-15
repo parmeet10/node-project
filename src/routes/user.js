@@ -90,19 +90,19 @@ router.get('/users/:id/blogs',async (req,res)=>{    //api to extract other users
     res.status(302).send(blogs.title);
 })
 
-router.post('/users/:userid/blogcomments', new AuthMiddleware().authFilter,async (req,res)=>{
+router.post('/users/:userid/blogcomments', new AuthMiddleware().authFilter,async (req,res)=>{//post comments on other users blog
     const {id}=req.user;
     const {userid}=req.params;
     const {comment}=req.body;
     const userService=new UserService();
     const blogService = new BlogService()
     const commentingUser= await userService.getUser(id);
-    const userExistCheck=await userService.getUser(userid);
+    const userExistence=await userService.getUser(userid);
     if(!comment) 
                 res.status(400).send({message:`comment field cannot be empty`})
     if(comment.length<1 &&comment.length>400)
                 res.status(400).send({message:`comment must have minimum 2 characters and at most 400 characters`})
-    if(userExistCheck.length){
+    if(userExistence.length){
                 const userToCommented=await blogService.getBlog(userid)
     if(userToCommented.length){
                 const commentOnBlog= await blogService.comments(comment,userToCommented[0].id,commentingUser[0].username)
@@ -113,7 +113,7 @@ router.post('/users/:userid/blogcomments', new AuthMiddleware().authFilter,async
 
 
 })
-router.get('/users/getcomments',new AuthMiddleware().authFilter,async (req,res)=>{
+router.get('/users/getcomments',new AuthMiddleware().authFilter,async (req,res)=>{//user can see comments on his own blog
     const {id}=req.user;
     let blogcomments=[]
     console.log(id)
