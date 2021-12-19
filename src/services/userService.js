@@ -1,10 +1,14 @@
+ 
 const UserRepository = require('../dao/userRepository');
 const Bcrypt = require('./brycpt');
 const Auth = require('../utils/auth');
+const res = require('express/lib/response');
+
 
 class UserService {
     constructor() {
         this.userRepository = new UserRepository();
+        this.Bcrypt=new Bcrypt();
     };
 
     async create(username, email, password) {
@@ -27,7 +31,6 @@ class UserService {
 
     async getUser(id){
         const userDataArr= await this.userRepository.getUserFromId(id);
-        const blogService = new BlogService()
         return userDataArr;
     }
 
@@ -45,6 +48,15 @@ class UserService {
             }
         }
         else return { success: false , data: {}, message: `either username or password is incorrect.`};
+    }
+    async deleteUserById(id){
+        const deletedUser= await this.userRepository.findUserByIdAndDelete(id);
+         return deletedUser;
+    }
+
+    async listAllUsers(id){
+        const usersList= await this.userRepository.listAllUsers(id);
+        return usersList;
     }
 }
 

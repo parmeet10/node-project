@@ -3,7 +3,7 @@ const AuthMiddleware = require('../middlewares/authMiddleware');
 const BlogService = require('../services/blogService');
 const router = express.Router();
 
-router.post('/blog', new AuthMiddleware().authFilter, async (req, res) => {
+router.post('/blog', new AuthMiddleware().authFilter, async (req, res) => {//api to create blog
     const { title, description } = req.body;
     const { id: userid } = req.user;
     const blogservice = new BlogService();

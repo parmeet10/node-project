@@ -14,10 +14,34 @@ class BlogRepository {
     }
     async getBlogFromId(id){
         const connection = await this.Database.getConnection();
-        const query=`SELECT * FROM BLOGS WHERE ID=? `;
+        const query=`SELECT * FROM BLOGS WHERE USERID=? `;
         const [userBlogArr]= await connection.query(query,id);
         return userBlogArr;
     }
-    
+    async blogComment(comment,userid,username){
+        const connection = await this.Database.getConnection();
+        const query = `INSERT INTO BLOGCOMMENTS (comment, blogid, createdby, updatedby)
+                       VALUES(?,?,?,?)`;
+        const [responseCommentObj]=await connection.query(query, [comment,userid, username, username]);
+        return responseCommentObj;
+    }
+    async findCommentsByBlogId(blogId){
+        const connection = await this.Database.getConnection();
+        const query=`
+        SELECT * FROM blogcomments WHERE blogId = ?`;
+        const [commentArr]= await connection.query(query,[blogId]);
+        return commentArr;
+    }
+
+    async findActiveUserBlogById(blogId) {
+        const connection = await this.Database.getConnection();
+        const query = `
+        SELECT * FROM blogs b
+        WHERE b.id = ?;
+        `;
+        const [blogDetailsArr] = await connection.query(query, [blogId]);
+        return blogDetailsArr;
+    }
+
 }
 module.exports = BlogRepository;

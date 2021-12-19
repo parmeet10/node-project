@@ -34,11 +34,24 @@ class UserRepository {
         return userDataArr;
     }
 
-    async findUserByUsernameAndPassword(username, password) {
+    async findUserByUsernameAndPassword(username) {
         const connection= await this.database.getConnection();
         const query = `SELECT * FROM USERS WHERE username=?`;
         const [userDataArr] = await connection.query(query, [username]);
         return userDataArr;
+    }
+
+    async findUserByIdAndDelete(id){
+        const connection=await this.database.getConnection();
+        const query=`DELETE FROM USERS WHERE ID=?`;
+        await connection.query(query,[id]);
+        return {success:true}
+    }
+    async listAllUsers(id){
+        const connection=await this.database.getConnection();
+        const query=`SELECT username,id FROM USERS WHERE id !=?`;
+        const [usersList]= await connection.query(query,[id]);
+        return usersList;
     }
 }
 
