@@ -25,11 +25,22 @@ class BlogRepository {
         const [responseCommentObj]=await connection.query(query, [comment,userid, username, username]);
         return responseCommentObj;
     }
-    async findComment(id){
+    async findCommentsByBlogId(blogId){
         const connection = await this.Database.getConnection();
-        const query=`SELECT * FROM blogcomments WHERE blogid=? `;
-        const [commentArr]= await connection.query(query,id);
+        const query=`
+        SELECT * FROM blogcomments WHERE blogId = ?`;
+        const [commentArr]= await connection.query(query,[blogId]);
         return commentArr;
+    }
+
+    async findActiveUserBlogById(blogId) {
+        const connection = await this.Database.getConnection();
+        const query = `
+        SELECT * FROM blogs b
+        WHERE b.id = ?;
+        `;
+        const [blogDetailsArr] = await connection.query(query, [blogId]);
+        return blogDetailsArr;
     }
 
 }

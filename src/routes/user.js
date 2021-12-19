@@ -37,7 +37,7 @@ router.get('/users', new AuthMiddleware().authFilter, async (req, res) => {  //a
     const userDataArr = await userService.getUser(id);
     const blogDataArr = await blogService.getBlog(id);
     // console.log(userDataArr) 
-     console.log(blogDataArr);
+    console.log(blogDataArr);
     return res.status(201).send({ userDataArr, blogDataArr });
 
 
@@ -66,65 +66,60 @@ router.delete('/users/delete', new AuthMiddleware().authFilter, async (req, res)
     else
         return res.status(500).send({ message: `deletion is not successful` });
 })
-router.get('/users/listUsers',new AuthMiddleware().authFilter, async (req,res)=>{//api to list all users except current user
-    const{id}=req.user;
-    const userService=new UserService();
-    const usersList=await userService.listAllUsers(id);
+router.get('/users/listUsers', new AuthMiddleware().authFilter, async (req, res) => {//api to list all users except current user
+    const { id } = req.user;
+    const userService = new UserService();
+    const usersList = await userService.listAllUsers(id);
     return res.status(302).send(usersList);
 
 })
 
-router.get('/users/:id/blogs',async (req,res)=>{    //api to extract other users blogs
-    const {id} = req.params;
-    let blogs={
-        title:[],
-      
+router.get('/users/:id/blogs', async (req, res) => {    //api to extract other users blogs
+    const { id } = req.params;
+    let blogs = {
+        title: [],
+
     }
     const blogService = new BlogService()
     const blogDataArr = await blogService.getBlog(id);
-    for (let blog of blogDataArr)
-    {
+    for (let blog of blogDataArr) {
         blogs.title.push(blog.title)
         blogs.title.push(blog.description)
     }
     res.status(302).send(blogs.title);
 })
 
-router.post('/users/:userid/blogcomments', new AuthMiddleware().authFilter,async (req,res)=>{//post comments on other users blog
-    const {id}=req.user;
-    const {userid}=req.params;
-    const {comment}=req.body;
-    const userService=new UserService();
+router.post('/users/:userid/blogcomments', new AuthMiddleware().authFilter, async (req, res) => {//post comments on other users blog
+    const { id } = req.user;
+    const { userid } = req.params;
+    const { comment } = req.body;
+    const userService = new UserService();
     const blogService = new BlogService()
-    const commentingUser= await userService.getUser(id);
-    const userExistence=await userService.getUser(userid);
-    if(!comment) 
-                res.status(400).send({message:`comment field cannot be empty`})
-    if(comment.length<1 &&comment.length>400)
-                res.status(400).send({message:`comment must have minimum 2 characters and at most 400 characters`})
-    if(userExistence.length){
-                const userToCommented=await blogService.getBlog(userid)
-    if(userToCommented.length){
-                const commentOnBlog= await blogService.comments(comment,userToCommented[0].id,commentingUser[0].username)
-    if(commentOnBlog.success)            
-                        res.status(201).send({message:commentOnBlog.message});
-    }else res.status(400).send({message:`there is no such blogs for  id:${userid}`})
-    }else res.status(400).send({message:`user for id:${userid} does not exist `})
+    const commentingUser = await userService.getUser(id);
+    const userExistence = await userService.getUser(userid);
+    if (!comment)
+        res.status(400).send({ message: `comment field cannot be empty` })
+    if (comment.length < 1 && comment.length > 400)
+        res.status(400).send({ message: `comment must have minimum 2 characters and at most 400 characters` })
+    if (userExistence.length) {
+        const userToCommented = await blogService.getBlog(userid)
+        if (userToCommented.length) {
+            const commentOnBlog = await blogService.comments(comment, userToCommented[0].id, commentingUser[0].username)
+            if (commentOnBlog.success)
+                res.status(201).send({ message: commentOnBlog.message });
+        } else res.status(400).send({ message: `there is no such blogs for  id:${userid}` })
+    } else res.status(400).send({ message: `user for id:${userid} does not exist ` })
 
 
 })
-router.get('/users/getcomments',new AuthMiddleware().authFilter,async (req,res)=>{//user can see comments on his own blog
-    const {id}=req.user;
-    let blogcomments=[]
-    console.log(id)
+router.get('/users/:userId/blogs/:blogId/comments', new AuthMiddleware().authFilter, async (req, res) => {//user can see comments on his own blog
+    const { id } = req.user;
+    const { userId, blogId } = req.params;
     const blogService = new BlogService()
-    const comments= await blogService.commentsOnBlog(id);
-    if(comments.length){
-        for( let comment of comments)
-        {
-            blogcomments.push(comment.comment)
-        }res.status(201).send({blogcomments});
-    }
-    else res.status(400).send({message:`there is no comments on your written blogs`})
+    const userBlogs = await blogService.getBlog(id)
+    if (userBlogs.length === 0) return res.status(400).send({ message: `NO blogs Found` });
+    const response = await blogService.findCommentsByBlog(userId, blogId);
+    if (!response.success) return res.status(400).send(response);
+    return res.status(200).send(response);
 })
 module.exports = router;
